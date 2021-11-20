@@ -3,13 +3,13 @@ title: "p8105_hw5_xz3078"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 library(tidyverse)
 ```
 
 ## Problem 1
 
-```{r}
+```{r message = FALSE}
 homicide_df = 
   read_csv("./homicide-data.csv", na = c("", "Unknown")) %>%
   mutate(
@@ -61,6 +61,8 @@ results_df = homicide_df %>%
   select(city_state, tidy_results) %>%
   unnest(tidy_results) %>%
   select(city_state, estimate, starts_with("conf"))
+
+results_df
 ```
 
 ```{r}
@@ -90,8 +92,7 @@ values = output %>%
 
 data = tibble(file_name, values) %>% 
   separate(files, into = c("arm", "id"), sep = "\\_") %>%
-  mutate(id = str_replace(id, "\\.csv", ""),
-         id = as.numeric(id)) %>%
+  mutate(id = str_replace(id, "\\.csv", "")) %>%
   pivot_longer(
     week_1:week_8,
     names_to = "week", 
@@ -101,13 +102,12 @@ data = tibble(file_name, values) %>%
   select(arm_id, everything())
 
 data %>% 
-  group_by(arm_id) %>%
-  ggplot(aes(x = week, y = observation, color = arm_id)) + 
-    geom_point(alpha = .5) + 
-    geom_line()
-    labs(title = "“spaghetti” plot of average value over time",
-         y = "mean value")
+  ggplot(aes(x = week, y = observation, group = arm_id, color = arm)) + 
+    geom_line() + 
+    labs(title = "“spaghetti” plot of observations on each subject over time")
 ```
+
+We can see from the plot that experiment groups seem to have higher growth in observations over 8 weeks than control groups. There are not much changes in control groups over time. At week 7 and week 8, the observations of all experiment groups are higher than control groups. 
 
 ## Problem 3
 
@@ -116,6 +116,28 @@ set.seed(10)
 
 iris_with_missing = iris %>% 
   map_df(~replace(.x, sample(1:150, 20), NA)) %>%
-  mutate(Species = as.character(Species))
+  mutate(Species = as.character(Species)) %>%
+  janitor::clean_names()
 ```
+
+```{r}
+replace_missing = function(x) {
+  
+  if(is.numeric(x)) {
+    x = ifelse(is.na(x), mean(x, na.rm = TRUE), x)
+  }
+  
+  if(is.character(x)) {
+     x = ifelse(is.na(x), "virginica", x)
+  }
+  
+  return(x)
+  
+}
+
+map_df(iris_with_missing, replace_missing)
+```
+
+
+
 
