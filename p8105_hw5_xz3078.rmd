@@ -101,6 +101,8 @@ data = tibble(file_name, values) %>%
   mutate(arm_id = str_c(arm, id)) %>%
   select(arm_id, everything())
 
+data
+
 data %>% 
   ggplot(aes(x = week, y = observation, group = arm_id, color = arm)) + 
     geom_line() + 
